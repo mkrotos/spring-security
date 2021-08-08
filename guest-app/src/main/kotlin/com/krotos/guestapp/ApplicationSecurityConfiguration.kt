@@ -1,33 +1,42 @@
 package com.krotos.guestapp
 
+import com.krotos.guestapp.auth.LandonUserDetailsService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.provisioning.InMemoryUserDetailsManager
+import org.springframework.security.crypto.password.NoOpPasswordEncoder
 
 @Configuration
 @EnableWebSecurity
-class ApplicationSecurityConfiguration: WebSecurityConfigurerAdapter() {
+class ApplicationSecurityConfiguration : WebSecurityConfigurerAdapter() {
+
+    @Autowired
+    private lateinit var userDetailsService: LandonUserDetailsService
+
+    @Bean
+    fun authenticationProvider(): DaoAuthenticationProvider {
+        val provider = DaoAuthenticationProvider()
+        provider.setUserDetailsService(userDetailsService)
+        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance())
+        return provider
+    }
+
+    override fun configure(auth: AuthenticationManagerBuilder?) {
+        auth?.authenticationProvider(authenticationProvider())
+    }
+
     override fun configure(http: HttpSecurity) {
         http.csrf().disable()
             .authorizeRequests()
-            .antMatchers("/", "/index", "/css/*","/js/*").permitAll()
+            .antMatchers("/", "/index", "/css/*", "/js/*").permitAll()
             .anyRequest().authenticated()
             .and()
             .httpBasic()
     }
 
-    @Bean
-    override fun userDetailsService(): UserDetailsService {
-        val users = listOf<UserDetails>(
-            User.withDefaultPasswordEncoder().username("me").password("pass").roles("USER", "ADMIN").build(),
-            User.withDefaultPasswordEncoder().username("he").password("buka").roles("USER").build(),
-        )
-        return InMemoryUserDetailsManager(users)
-    }
 }
