@@ -4,9 +4,9 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
-class LandonUserPrinciple(private val user: User) : UserDetails {
+class LandonUserPrinciple(private val user: User, private val authGroups: List<AuthGroup>?) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        return mutableListOf(SimpleGrantedAuthority("USER"))
+        return authGroups?.map { SimpleGrantedAuthority(it.authGroup) }?.toMutableSet() ?: mutableSetOf()
     }
 
     override fun getPassword(): String {

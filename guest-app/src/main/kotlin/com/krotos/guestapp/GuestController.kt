@@ -4,6 +4,7 @@ import com.krotos.guestapp.domain.Guest
 import com.krotos.guestapp.domain.GuestModel
 import com.krotos.guestapp.service.GuestService
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
@@ -21,6 +22,7 @@ class GuestController (private val guestService: GuestService) {
     }
 
     @GetMapping(value = ["/guests"])
+    @PreAuthorize("hasRole('ROLE_USER')")
     fun getGuests(model: Model): String {
         val guests: List<Guest?>? = guestService.getAllGuests()
         model.addAttribute("guests", guests)
@@ -28,11 +30,13 @@ class GuestController (private val guestService: GuestService) {
     }
 
     @GetMapping(value = ["/guests/add"])
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     fun getAddGuestForm(model: Model?): String {
         return "guest-view"
     }
 
     @PostMapping(value = ["/guests"])
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     fun addGuest(request: HttpServletRequest, model: Model, @ModelAttribute guestModel: GuestModel?): ModelAndView {
         val guest: Guest? = guestService.addGuest(guestModel)
         model.addAttribute("guest", guest)
@@ -41,6 +45,7 @@ class GuestController (private val guestService: GuestService) {
     }
 
     @GetMapping(value = ["/guests/{id}"])
+    @PreAuthorize("hasRole('ROLE_USER')")
     fun getGuest(model: Model, @PathVariable id: Long): String {
         val guest: Guest? = guestService.getGuest(id)
         model.addAttribute("guest", guest)

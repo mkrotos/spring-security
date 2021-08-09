@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service
 private val log = LoggerFactory.getLogger(LandonUserDetailsService::class.java)
 
 @Service
-class LandonUserDetailsService(private val userRepository: UserRepository) : UserDetailsService {
+class LandonUserDetailsService(
+    private val userRepository: UserRepository,
+    private val authGroupRepository: AuthGroupRepository
+) : UserDetailsService {
     override fun loadUserByUsername(username: String?): UserDetails {
         log.debug("Username: $username")
         require(username != null) { "Username can't be null here" }
@@ -18,6 +21,8 @@ class LandonUserDetailsService(private val userRepository: UserRepository) : Use
             log.info("User with username: $username not found")
             throw UsernameNotFoundException("User with username: $username not found")
         }
-        return LandonUserPrinciple(user)
+        val authGroups = authGroupRepository.findByUsername(username)
+        log.info("Authentication groups: $authGroups")
+        return LandonUserPrinciple(user, authGroups)
     }
 }
