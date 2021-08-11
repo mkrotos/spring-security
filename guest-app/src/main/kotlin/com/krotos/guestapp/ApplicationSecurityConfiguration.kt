@@ -49,7 +49,12 @@ class ApplicationSecurityConfiguration : WebSecurityConfigurerAdapter() {
             .antMatchers("/", "/index", "/css/*", "/js/*").permitAll()
             .anyRequest().authenticated()
             .and()
-            .httpBasic()
+            .formLogin()
+            .loginPage("/login").permitAll()
+            .and()
+            .logout().invalidateHttpSession(true).clearAuthentication(true)
+            .logoutUrl("/logout")
+            .logoutSuccessUrl("/logout-success").permitAll()
     }
 
 }
